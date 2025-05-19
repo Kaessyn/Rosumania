@@ -1,0 +1,98 @@
+-- Rosumania AutoPlayer: Hold chaining ultra preciso, sem flick entre holds colados
+
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local RunService = game:GetService("RunService")
+local player = game:GetService("Players").LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local mainGui = nil
+for _, gui in ipairs(playerGui:GetChildren()) do
+    if gui:FindFirstChild("GameplayFrame") then
+        mainGui = gui
+        break
+    end
+end
+if not mainGui then warn("ScreenGui do Rosumania não encontrado!"); return end
+
+local gameplay = mainGui:FindFirstChild("GameplayFrame")
+local tracks = gameplay and gameplay:FindFirstChild("Tracks")
+if not (gameplay and tracks) then warn("GameplayFrame/Tracks não encontrados!"); return end
+
+local trackToKey = {
+    Track1 = Enum.KeyCode.A,
+    Track2 = Enum.KeyCode.S,
+    Track3 = Enum.KeyCode.K,
+    Track4 = Enum.KeyCode.L,
+}
+
+local HITLINE = 0.98
+local HOLD_TOLERANCE = 0.005
+local currentlyDown = {}
+
+RunService.RenderStepped:Connect(function()
+    local shouldBeDown = {}
+
+    for trackName, key in pairs(trackToKey) do
+        local track = tracks:FindFirstChild(trackName)
+        local mustHold = false
+
+        if track then
+            -- HOLD CHAINING: verifica todos os HeldNoteProto simultaneamente
+            local heldNotes = {}
+            for _, obj in ipairs(track:GetChildren()) do
+                if obj.Name == "HeldNoteProto" then
+                    table.insert(heldNotes, obj)
+                end
+            end
+
+            for _, heldNote in ipairs(heldNotes) do
+                local head = heldNote:FindFirstChild("Head")
+                local tail = heldNote:FindFirstChild("Tail")
+                local headY, tailY
+                local headValid, tailValid = false, false
+
+                if head and head:IsA("Frame") and head.Position then
+                    headY = head.Position.Y.Scale or 0
+                    headValid = true
+                end
+                if tail and tail:IsA("Frame") and tail.Position then
+                    tailY = tail.Position.Y.Scale or 0
+                    tailValid = true
+                end
+
+                if headValid and tailValid then
+                    if headY >= HITLINE - HOLD_TOLERANCE and tailY < HITLINE - HOLD_TOLERANCE then
+                        mustHold = true
+                        break
+                    end
+                end
+            end
+
+            if not mustHold then
+                for _, note in ipairs(track:GetChildren()) do
+                    if note.Name == "NoteProto" and note:IsA("Frame") and note.Position then
+                        local posY = note.Position.Y.Scale or 0
+                        if posY >= HITLINE - HOLD_TOLERANCE then
+                            mustHold = true
+                            break
+                        end
+                    end
+                end
+            end
+        end
+
+        if mustHold then
+            shouldBeDown[key] = true
+        end
+    end
+
+    for _, key in pairs(trackToKey) do
+        if shouldBeDown[key] and not currentlyDown[key] then
+            VirtualInputManager:SendKeyEvent(true, key, false, game)
+            currentlyDown[key] = true
+        elseif not shouldBeDown[key] and currentlyDown[key] then
+            VirtualInputManager:SendKeyEvent(false, key, false, game)
+            currentlyDown[key] = false
+        end
+    end
+end)
