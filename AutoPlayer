@@ -1,4 +1,4 @@
---Auto Player (Change Keybinds)
+-- Rosumania AutoPlayer (Change Keybinds to D,F,J,K)
 
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
@@ -19,10 +19,10 @@ local tracks = gameplay and gameplay:FindFirstChild("Tracks")
 if not (gameplay and tracks) then warn("GameplayFrame/Tracks não encontrados!"); return end
 
 local trackToKey = {
-    Track1 = Enum.KeyCode.A,
-    Track2 = Enum.KeyCode.S,
-    Track3 = Enum.KeyCode.K,
-    Track4 = Enum.KeyCode.L,
+    Track1 = Enum.KeyCode.D,  --Change Keybinds
+    Track2 = Enum.KeyCode.F,  --Change Keybinds
+    Track3 = Enum.KeyCode.J,  --Change Keybinds
+    Track4 = Enum.KeyCode.K,  --Change Keybinds
 }
 
 local HITLINE = 0.98
