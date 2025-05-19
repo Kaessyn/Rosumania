@@ -1,4 +1,4 @@
--- Rosumania AutoPlayer: Hold chaining ultra preciso, sem flick entre holds colados
+--Auto Player (Change Keybinds)
 
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local RunService = game:GetService("RunService")
