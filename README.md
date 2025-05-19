@@ -1,1 +1,1 @@
-Made With AI
+75% Made with AI
